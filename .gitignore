@@ -27,3 +27,4 @@ _testmain.go
 # Visual Studio Code - https://code.visualstudio.com/
 .settings/
 .vscode/
+.idea/

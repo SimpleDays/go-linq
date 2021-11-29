@@ -2,7 +2,9 @@ package linq
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"testing"
 	"time"
 )
 
@@ -2624,4 +2626,95 @@ func ExampleFromChannelT() {
 	fmt.Println(q.Results())
 	// Output:
 	// [one two three]
+}
+
+type TestModel struct {
+	Name  string
+	Age   int
+	Birth time.Time
+	Books []TestBook
+}
+
+type TestBook struct {
+	BookName  string
+	BookPrice float64
+}
+
+func mockTestModelData() []*TestModel {
+	mockNames := []string{"niko", "mark", "shelly", "jack", "roman", "alisa", "alisa"}
+
+	mockData := make([]*TestModel, 0, len(mockNames))
+	for _, name := range mockNames {
+		model := &TestModel{}
+		model.Name = name
+		model.Age = mockAge()
+		model.Birth = time.Now().AddDate(model.Age*-1, 0, 0)
+
+		books := make([]TestBook, 0, 2)
+
+		books = append(books, TestBook{
+			BookName:  "代码的整洁之道",
+			BookPrice: 90,
+		})
+
+		books = append(books, TestBook{
+			BookName:  "程序员的自我修养",
+			BookPrice: 90,
+		})
+
+		model.Books = books
+
+		mockData = append(mockData, model)
+	}
+	//for i := 0; i < 500; i++ {
+	//	for _, name := range mockNames {
+	//		model := &TestModel{}
+	//		model.Name = name
+	//		model.Age = mockAge()
+	//		model.Birth = time.Now().AddDate(model.Age*-1, 0, 0)
+	//
+	//		books := make([]TestBook, 0, 2)
+	//
+	//		books = append(books, TestBook{
+	//			BookName:  "代码的整洁之道",
+	//			BookPrice: 90,
+	//		})
+	//
+	//		books = append(books, TestBook{
+	//			BookName:  "程序员的自我修养",
+	//			BookPrice: 90,
+	//		})
+	//
+	//		model.Books = books
+	//
+	//		mockData = append(mockData, model)
+	//	}
+	//}
+
+	return mockData
+}
+
+func mockAge() int {
+	rand.Seed(time.Now().UnixNano())
+	randNum := rand.Intn(50)
+	return randNum
+}
+
+var data = mockTestModelData()
+
+func TestWhereAndSelect(t *testing.T) {
+
+	// 筛选name为mark的获取books的第一条
+	result := From(data).Where(func(i interface{}) bool {
+		return i.(*TestModel).Name == "mark"
+	}).Select(func(i interface{}) interface{} {
+		return i.(*TestModel).Books
+	}).First()
+
+	m := result.([]TestBook)
+
+	for _, s := range m {
+		t.Log(s.BookName)
+		t.Log(s.BookPrice)
+	}
 }
